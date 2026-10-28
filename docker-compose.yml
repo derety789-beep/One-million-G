@@ -1,0 +1,8 @@
+services:
+  youtube-bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./queue:/app/queue
+      - ./data:/app/data

@@ -1,0 +1,12 @@
+.env
+client_secret*.json
+__pycache__/
+*.pyc
+data/*
+!data/.gitkeep
+queue/*
+!queue/.gitkeep
+!queue/done/
+queue/done/*
+!queue/done/.gitkeep
+!queue/exemple.json

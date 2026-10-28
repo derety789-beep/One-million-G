@@ -1,0 +1,6 @@
+anthropic>=2.3.0
+google-api-python-client>=2.150.0
+google-auth>=2.35.0
+apscheduler>=3.10,<4
+python-dotenv>=1.0
+requests>=2.32

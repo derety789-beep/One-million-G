@@ -1,0 +1,7 @@
+{
+  "notes": "Exemple de fichier de métadonnées. Renomme-le comme ta vidéo (ma_video.mp4 -> ma_video.json). Mets juste des notes ici et l'IA écrira le titre, la description et les tags. Tu peux aussi remplir toi-même les champs ci-dessous.",
+  "title": "",
+  "description": "",
+  "tags": [],
+  "privacy": "public"
+}
