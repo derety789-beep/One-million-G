@@ -1,0 +1,884 @@
+<title>Argent &amp; Audience</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout : un « studio » — la scène 3D au centre comme un écran de montage,
+   le programme à gauche comme une liste de séquences, la légende sous l'image comme des sous-titres. */
+:root {
+  --bg: #F3F2F8;
+  --surface: #FFFFFF;
+  --surface-2: #E9E7F3;
+  --fg: #17142B;
+  --muted: #5E5A78;
+  --line: #D8D4EA;
+  --accent: #6D3FE0;      /* violet du serveur */
+  --accent-soft: #E6DEFC;
+  --up: #0F9D6B;          /* hausse / vues qui montent */
+  --down: #D6334A;        /* baisse / danger */
+  --gold: #C98A0B;
+  --stage-a: #221B45;
+  --stage-b: #0E0B1F;
+  --stage-fg: #F4F1FF;
+  --font-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D0B18; --surface: #171428; --surface-2: #211D38; --fg: #EEEBFA; --muted: #A39FBE;
+    --line: #2E2950; --accent: #9C7CFF; --accent-soft: #2A2150; --up: #34D399; --down: #FB7185;
+    --gold: #FBBF24; --stage-a: #261E52; --stage-b: #0A0816; --stage-fg: #F4F1FF; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D0B18; --surface: #171428; --surface-2: #211D38; --fg: #EEEBFA; --muted: #A39FBE;
+  --line: #2E2950; --accent: #9C7CFF; --accent-soft: #2A2150; --up: #34D399; --down: #FB7185;
+  --gold: #FBBF24; --stage-a: #261E52; --stage-b: #0A0816; --stage-fg: #F4F1FF; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 40px;
+}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.app { max-width: 1280px; margin: 0 auto; display: grid; gap: 20px; grid-template-columns: 300px minmax(0, 1fr); align-items: start; }
+.brand { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.brand h1 { font-size: clamp(22px, 3.4vw, 34px); font-weight: 800; }
+.brand h1 span { color: var(--accent); }
+.brand p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.brand-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Programme */
+.syllabus { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; }
+.progress { display: grid; gap: 6px; margin-bottom: 14px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+.progress-track { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.progress-fill { height: 100%; width: 0; background: var(--up); transition: width .4s ease; }
+.part-title { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 14px 4px 6px; }
+.mod { width: 100%; display: grid; grid-template-columns: 28px minmax(0,1fr) 18px; gap: 10px; align-items: center; text-align: left; background: none; border: 0; border-radius: 10px; padding: 8px 6px; }
+.mod:hover { background: var(--surface-2); }
+.mod[aria-current="true"] { background: var(--accent-soft); }
+.mod-num { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--accent); text-align: center; }
+.mod-name { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.mod-check { color: var(--up); font-weight: 700; }
+
+/* Lecteur */
+.player { display: grid; gap: 14px; min-width: 0; }
+.lesson-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.lesson-head h2 { font-size: clamp(20px, 2.6vw, 28px); font-weight: 700; }
+.stage-wrap { position: relative; border-radius: var(--r); overflow: hidden; background: radial-gradient(120% 90% at 50% 0%, var(--stage-a), var(--stage-b)); aspect-ratio: 16 / 9; max-width: 100%; }
+#stage { width: 100%; height: 100%; display: block; }
+.stage-tag { position: absolute; left: 14px; top: 12px; max-width: calc(100% - 90px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--stage-fg); opacity: .7; text-transform: uppercase; }
+.stage-time { position: absolute; right: 14px; top: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--stage-fg); opacity: .7; }
+.caption { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; font-size: clamp(16px, 1.8vw, 19px); line-height: 1.6; min-height: 7.2em; }
+.caption strong { color: var(--accent); font-weight: 700; }
+.caption p { margin: 0; max-width: 70ch; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.dots { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.dot { width: 26px; height: 8px; border-radius: 99px; border: 0; background: var(--surface-2); padding: 0; }
+.dot.done { background: var(--accent); opacity: .45; }
+.dot.on { background: var(--accent); }
+
+/* Fin de module */
+.wrap-up { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; min-width: 0; }
+.card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.card p, .card li { color: var(--fg); font-size: 15px; }
+.card ul { margin: 6px 0 0; padding-left: 20px; }
+.quiz-q { font-weight: 600; margin: 12px 0 8px; }
+.quiz-opts { display: grid; gap: 6px; }
+.opt { text-align: left; background: var(--surface-2); border: 1px solid transparent; border-radius: 10px; padding: 9px 12px; font-size: 14px; }
+.opt:hover { border-color: var(--accent); }
+.opt.right { border-color: var(--up); background: color-mix(in srgb, var(--up) 16%, var(--surface)); }
+.opt.wrong { border-color: var(--down); background: color-mix(in srgb, var(--down) 14%, var(--surface)); }
+.why { font-size: 14px; color: var(--muted); margin-top: 6px; }
+.warn { border-color: color-mix(in srgb, var(--down) 40%, var(--line)); }
+.warn h3 { color: var(--down); }
+.legal { font-size: 13px; color: var(--muted); max-width: 90ch; }
+
+/* Mode tournage : tout disparaît sauf l'image et les sous-titres */
+body.record .syllabus, body.record .brand, body.record .controls, body.record .lesson-head, body.record .wrap-up, body.record .legal { display: none; }
+body.record .app { grid-template-columns: 1fr; max-width: 1500px; }
+body.record .caption { font-size: clamp(18px, 2.2vw, 26px); text-align: center; }
+body.record .caption p { margin: 0 auto; }
+.exit-record { position: fixed; right: max(12px, env(safe-area-inset-right, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px)); opacity: .25; }
+.exit-record:hover { opacity: 1; }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .syllabus { position: static; max-height: none; order: 3; }
+}
+@media (prefers-reduced-motion: reduce) { .progress-fill { transition: none; } }
+</style>
+
+<div class="app" id="app">
+  <header class="brand">
+    <div>
+      <h1>ARGENT <span>&amp;</span> AUDIENCE</h1>
+      <p>Fais grossir tes vues, puis fais travailler ce que tu gagnes. 14 modules animés.</p>
+    </div>
+    <div class="brand-actions">
+      <button class="btn" id="btn-theme" type="button" aria-label="Changer de thème">☾ Thème</button>
+      <button class="btn primary" id="btn-record" type="button">● Mode tournage</button>
+    </div>
+  </header>
+
+  <nav class="syllabus" aria-label="Programme de la formation">
+    <div class="progress">
+      <div class="progress-label"><span>Ta progression</span><span id="progress-text">0 / 14</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <div id="syllabus-list"></div>
+  </nav>
+
+  <main class="player">
+    <div class="lesson-head">
+      <div>
+        <div class="eyebrow" id="lesson-eyebrow">Partie 1 · Module 1</div>
+        <h2 id="lesson-title">Comment marchent les algorithmes</h2>
+      </div>
+    </div>
+    <div class="stage-wrap">
+      <canvas id="stage" aria-label="Animation 3D de la leçon"></canvas>
+      <div class="stage-tag" id="stage-tag">Argent &amp; Audience</div>
+      <div class="stage-time" id="stage-time">1 / 6</div>
+    </div>
+    <div class="caption" aria-live="polite"><p id="caption"></p></div>
+    <div class="controls">
+      <button class="btn" id="btn-prev" type="button" aria-label="Étape précédente">◀ Précédent</button>
+      <button class="btn primary" id="btn-play" type="button">▶ Lecture auto</button>
+      <button class="btn" id="btn-next" type="button" aria-label="Étape suivante">Suivant ▶</button>
+      <div class="dots" id="dots" role="tablist" aria-label="Étapes de la leçon"></div>
+    </div>
+    <section class="wrap-up" id="wrap-up" hidden></section>
+    <p class="legal">Formation éducative. Elle ne constitue pas un conseil en investissement personnalisé. Investir en bourse comporte un risque de perte en capital : les performances passées ne préjugent pas des performances futures. Les chiffres donnés sont des exemples. Vérifie toujours les règles à jour (impôts, conditions des plateformes) sur les sites officiels.</p>
+  </main>
+</div>
+<button class="btn exit-record" id="btn-exit-record" type="button" hidden>✕ Quitter le tournage</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =====================================================================
+   CONTENU DE LA FORMATION
+   Chaque étape : t = texte (les **mots** sont mis en valeur), s = scène 3D
+   ===================================================================== */
+const COURSE = [
+{ part: "Partie 1 · Les vues", modules: [
+{ title: "Comment marchent les algorithmes", steps: [
+  { t: "Bienvenue ! Avant de faire des vues, il faut comprendre **qui décide** de montrer ta vidéo : l’algorithme. YouTube, TikTok et Instagram fonctionnent sur la même idée.", s: { type: "title", icon: "▶", title: "L’algorithme", sub: "Module 1" } },
+  { t: "Le but d’une plateforme est simple : **garder les gens le plus longtemps possible**. Elle met en avant les vidéos qui retiennent les spectateurs et qui leur plaisent.", s: { type: "phone", label: "Elle choisit ce que tu vois" } },
+  { t: "Quand tu publies, ta vidéo est d’abord montrée à **un petit groupe** de personnes. Si elles réagissent bien, la plateforme la montre à un groupe plus grand, puis encore plus grand.", s: { type: "crowd", rings: ["Test", "Plus large", "Viral"] } },
+  { t: "Pour juger ta vidéo, l’algorithme regarde surtout des **signaux** : est-ce que les gens cliquent, est-ce qu’ils regardent jusqu’au bout, est-ce qu’ils commentent, partagent ou s’abonnent ?", s: { type: "orbit", center: "Ta vidéo", items: ["Clic", "Rétention", "Partage", "Commentaire", "Abonnement"] } },
+  { t: "Le signal roi, c’est la **rétention** : le pourcentage de la vidéo que les gens regardent. Une vidéo courte regardée en entier bat souvent une longue vidéo abandonnée au milieu.", s: { type: "line", points: [100, 70, 62, 58, 55, 53, 50, 48, 46, 45], label: "Rétention (%)", color: "accent" } },
+  { t: "Retiens bien ça : tu ne crées pas pour l’algorithme, tu crées **pour le spectateur**. Si les gens aiment, l’algorithme suit. Tout le reste de cette partie sert à ça.", s: { type: "title", icon: "♥", title: "Crée pour le spectateur", sub: "L’algorithme suit" } },
+], ex: "Ouvre 3 vidéos qui ont beaucoup de vues dans ton thème. Pour chacune, note ce qui t’a donné envie de cliquer, et à quel moment tu aurais pu décrocher.",
+quiz: [
+  { q: "Que fait la plateforme quand une vidéo plaît à son premier petit groupe ?", a: ["Elle la supprime", "Elle la montre à plus de monde", "Elle la rend privée"], ok: 1, why: "La vidéo est testée par étapes : plus elle plaît, plus elle est montrée." },
+  { q: "Quel est le signal le plus important ?", a: ["Le nombre de hashtags", "La rétention", "L’heure de publication"], ok: 1, why: "La rétention montre si les gens restent : c’est ce que les plateformes veulent." },
+]},
+{ title: "Le hook : les 3 premières secondes", steps: [
+  { t: "Le **hook** (l’accroche), ce sont les premières secondes de ta vidéo. C’est là que la majorité des gens décident de rester… ou de scroller.", s: { type: "timer", from: 3, end: "Accroche !" } },
+  { t: "Le hook doit donner **une raison de rester** tout de suite. Pas de « Salut tout le monde, aujourd’hui on va… » : va droit au but.", s: { type: "shield", items: ["Salut c’est moi…", "Longue intro", "Logo animé 10 s"] } },
+  { t: "Hook n°1, **la promesse** : dis ce que la personne va gagner. « Voici comment passer de 0 à 1 000 abonnés en 3 mois. »", s: { type: "boxes", items: [{ label: "Promesse", sub: "ce que tu gagnes" }, { label: "Question", sub: "ça t’intrigue" }, { label: "Résultat", sub: "on montre la fin" }], highlight: 0 } },
+  { t: "Hook n°2, **la question** qui intrigue : « Pourquoi 90 % des débutants abandonnent YouTube ? » Hook n°3, **le résultat d’abord** : tu montres la fin (le avant/après), puis tu expliques comment.", s: { type: "boxes", items: [{ label: "Promesse", sub: "ce que tu gagnes" }, { label: "Question", sub: "ça t’intrigue" }, { label: "Résultat", sub: "on montre la fin" }], highlight: 2 } },
+  { t: "Ajoute du mouvement dès la première image : un zoom, un texte à l’écran, un son. Le cerveau remarque **ce qui bouge et ce qui change**.", s: { type: "timeline", label: "Image 1 : du mouvement" } },
+  { t: "Ton hook fait une promesse ? **Tiens-la**. Si la vidéo ne livre pas ce qu’elle annonce, les gens partent, et la rétention s’effondre.", s: { type: "title", icon: "✓", title: "Promets, puis livre", sub: "Module 2" } },
+], ex: "Écris 5 hooks différents pour la même vidéo (promesse, question, résultat d’abord, chiffre choc, contraste). Lis-les à voix haute et garde le meilleur.",
+quiz: [
+  { q: "Quel début de vidéo est le meilleur ?", a: ["« Salut tout le monde, bienvenue sur ma chaîne… »", "« Ce réglage a doublé mes vues en une semaine. »", "Un logo animé de 10 secondes"], ok: 1, why: "Il donne tout de suite une raison de rester." },
+  { q: "Que se passe-t-il si le hook promet quelque chose que la vidéo ne donne pas ?", a: ["Rien", "Les gens partent et la rétention baisse", "La vidéo devient virale"], ok: 1, why: "Une promesse non tenue fait fuir les spectateurs." },
+]},
+{ title: "Le montage qui retient", steps: [
+  { t: "Un bon montage, c’est un montage **qu’on ne remarque pas** : la personne ne s’ennuie jamais, donc elle reste.", s: { type: "title", icon: "✂", title: "Le montage qui retient", sub: "Module 3" } },
+  { t: "Règle n°1 : **coupe les blancs**. Les silences, les « euh », les répétitions… Tout ce qui n’apporte rien part à la poubelle.", s: { type: "timeline", cuts: true, label: "Avant → Après" } },
+  { t: "Règle n°2 : **change d’image régulièrement**. Un zoom, un changement de plan, une image d’illustration (B-roll). L’œil a besoin de nouveauté toutes les quelques secondes.", s: { type: "timeline", label: "Plan · Zoom · B-roll · Plan" } },
+  { t: "Règle n°3 : **les sous-titres**. Beaucoup de gens regardent sans le son, surtout sur téléphone. Des sous-titres lisibles gardent ces spectateurs.", s: { type: "thumb", text: "SOUS-TITRES", mode: "subs" } },
+  { t: "Règle n°4 : **le son**. Une musique adaptée et quelques bruitages (whoosh, pop, clic) rendent la vidéo vivante. Le son compte autant que l’image.", s: { type: "bars", series: [{ values: [3, 7, 4, 9, 5, 8, 3, 6, 9, 4, 7, 5], color: "accent" }], labels: [], wave: true, title: "Sound design" } },
+  { t: "Règle n°5 : **relance l’attention**. Toutes les 30 secondes environ, annonce ce qui arrive (« et le meilleur, c’est la suite… »). Et finis vite : pas de longue fin qui fait partir les gens.", s: { type: "line", points: [100, 80, 74, 78, 72, 76, 70, 73, 69, 71], label: "Re-hooks = la courbe remonte", color: "up" } },
+], ex: "Reprends une de tes vidéos (ou filme-toi 1 minute). Coupe tous les blancs, ajoute un zoom toutes les 5 secondes et des sous-titres. Compare l’avant et l’après.",
+quiz: [
+  { q: "Pourquoi mettre des sous-titres ?", a: ["Pour faire joli", "Beaucoup regardent sans le son", "C’est obligatoire"], ok: 1, why: "Sans sous-titres, tu perds ceux qui regardent en silencieux." },
+  { q: "Que faire des silences et des « euh » ?", a: ["Les garder pour faire naturel", "Les couper", "Les accélérer x2"], ok: 1, why: "Chaque seconde inutile est une chance de perdre le spectateur." },
+]},
+{ title: "Titres et miniatures", steps: [
+  { t: "Avant de regarder ta vidéo, il faut **cliquer dessus**. Le titre et la miniature décident du clic : c’est le **taux de clic** (CTR).", s: { type: "funnel", levels: [{ label: "Impressions", value: "10 000" }, { label: "Clics", value: "600" }, { label: "Vues complètes", value: "300" }] } },
+  { t: "Une bonne miniature se lit **en une demi-seconde, en tout petit**, sur un téléphone. Un seul sujet, un visage expressif, et 3 mots maximum.", s: { type: "thumb", text: "3 MOIS", mode: "thumb" } },
+  { t: "Joue sur le **contraste** : couleurs vives sur fond simple, texte épais, et un élément qui attire l’œil (une flèche, un cercle, un avant/après).", s: { type: "thumb", text: "AVANT / APRÈS", mode: "contrast" } },
+  { t: "Le titre et la miniature **se complètent** : ils ne disent pas la même chose. La miniature montre l’émotion, le titre donne l’info.", s: { type: "boxes", items: [{ label: "Miniature", sub: "l’émotion" }, { label: "Titre", sub: "l’info" }], highlight: -1 } },
+  { t: "Attention au **piège à clics mensonger** : il peut faire cliquer, mais les gens partent vite, et l’algorithme le voit. Sois intrigant, mais honnête.", s: { type: "shield", items: ["Faux titre", "Miniature trompeuse"] } },
+  { t: "Sur YouTube, l’outil **Tester et comparer** te permet d’essayer plusieurs miniatures sur la même vidéo. Teste, garde la gagnante, recommence.", s: { type: "bars", series: [{ values: [4.1, 6.8, 5.2], color: "accent" }], labels: ["A", "B", "C"], unit: " %", title: "CTR par miniature" } },
+], ex: "Crée 3 miniatures pour la même vidéo. Affiche-les en tout petit sur ton téléphone, et demande à 3 personnes laquelle elles cliqueraient.",
+quiz: [
+  { q: "Combien de mots maximum sur une miniature ?", a: ["Environ 3", "Environ 15", "Le titre complet"], ok: 0, why: "Elle doit se lire en un coup d’œil, même en tout petit." },
+  { q: "Que mesure le CTR ?", a: ["Le temps de visionnage", "Le pourcentage de gens qui cliquent", "Le nombre d’abonnés"], ok: 1, why: "CTR = clics ÷ impressions." },
+]},
+{ title: "Trouver ses idées et sa niche", steps: [
+  { t: "Une **niche**, c’est ton terrain de jeu : un sujet précis, pour un public précis. Plus c’est clair, plus les gens savent pourquoi s’abonner.", s: { type: "title", icon: "◎", title: "Ta niche", sub: "Module 5" } },
+  { t: "La bonne niche est au croisement de 3 choses : **ce que tu aimes**, **ce que tu sais faire** et **ce que les gens cherchent**.", s: { type: "orbit", center: "Ta niche", items: ["Tu aimes", "Tu sais faire", "Les gens cherchent"] } },
+  { t: "Pour trouver des idées : regarde les **commentaires** (les gens posent leurs questions), les **suggestions de recherche** de YouTube, et les vidéos de ta niche qui ont fait beaucoup plus de vues que d’habitude.", s: { type: "bars", series: [{ values: [8, 11, 9, 64, 10, 12], color: "accent" }], labels: ["", "", "", "Pépite", "", ""], unit: "k", title: "Vues d’une chaîne" } },
+  { t: "Une vidéo qui fait **5 à 10 fois plus de vues** que la moyenne de sa chaîne, c’est un sujet qui plaît. Inspire-toi du sujet (pas en copiant !) et apporte ta touche.", s: { type: "crowd", rings: ["Moyenne", "x5", "x10"] } },
+  { t: "Pense en **formats** : une série que tu peux répéter (« Je teste… », « 1 jour pour… »). Les gens reviennent pour le format, et toi tu gagnes du temps.", s: { type: "grid", rows: 3, cols: 7, label: "Un format, plein d’épisodes" } },
+], ex: "Fais une liste de 20 idées de vidéos dans ta niche. Pour chacune, écris le titre comme si elle était déjà publiée. Garde les 5 qui te donnent le plus envie de cliquer.",
+quiz: [
+  { q: "La bonne niche, c’est…", a: ["Ce qui est à la mode, même si tu n’aimes pas", "Ce que tu aimes, sais faire et que les gens cherchent", "Le plus de sujets possible"], ok: 1, why: "Il faut tenir sur la durée et répondre à une vraie demande." },
+  { q: "Où trouver des idées ?", a: ["Dans les commentaires et les recherches", "Nulle part, il faut attendre l’inspiration", "Uniquement chez tes amis"], ok: 0, why: "Ton public te dit lui-même ce qu’il veut voir." },
+]},
+{ title: "Régularité et statistiques", steps: [
+  { t: "La régularité bat le talent. Mieux vaut **une vidéo par semaine pendant un an** que dix vidéos en un mois puis plus rien.", s: { type: "grid", rows: 4, cols: 13, label: "52 semaines, 52 vidéos" } },
+  { t: "Choisis un rythme **que tu peux tenir**, et prépare plusieurs vidéos d’avance (le « batch ») : tu filmes 3 vidéos le même jour, tu les publies sur 3 semaines.", s: { type: "coins", stacks: [3, 3, 3], labels: ["Semaine 1", "Semaine 2", "Semaine 3"], icon: "▶" } },
+  { t: "Ensuite, regarde tes **statistiques**. Les 3 plus importantes : le **taux de clic**, la **durée moyenne de visionnage** et la **courbe de rétention**.", s: { type: "boxes", items: [{ label: "CTR", sub: "on clique ?" }, { label: "Durée", sub: "on reste ?" }, { label: "Rétention", sub: "où on part ?" }], highlight: 2 } },
+  { t: "La courbe de rétention te montre **le moment exact** où les gens partent. Une grosse chute ? Regarde ce qui se passe à cet endroit, et évite-le la prochaine fois.", s: { type: "line", points: [100, 82, 78, 76, 74, 45, 42, 40, 39, 38], label: "Ici, les gens partent !", color: "down", mark: 5 } },
+  { t: "Améliore **une seule chose par vidéo** : le hook, puis la miniature, puis le rythme… Petit à petit, chaque vidéo devient meilleure que la précédente.", s: { type: "bars", series: [{ values: [1, 1.4, 1.9, 2.6, 3.5, 4.8], color: "up" }], labels: ["V1", "V2", "V3", "V4", "V5", "V6"], unit: "k", title: "Vues par vidéo" } },
+], ex: "Ouvre les statistiques de ta dernière vidéo. Note ton taux de clic, ta durée moyenne, et le moment où ta courbe de rétention chute le plus. Écris une chose à améliorer.",
+quiz: [
+  { q: "Qu’est-ce que le « batch » ?", a: ["Publier tous les jours", "Préparer plusieurs vidéos d’un coup", "Supprimer ses vieilles vidéos"], ok: 1, why: "Tu gagnes du temps et tu restes régulier." },
+  { q: "À quoi sert la courbe de rétention ?", a: ["Voir où les gens arrêtent de regarder", "Compter ses abonnés", "Choisir sa musique"], ok: 0, why: "Elle montre le moment précis où tu perds ton public." },
+]},
+{ title: "Transformer les vues en argent", steps: [
+  { t: "Des vues, c’est bien. Des vues qui **rapportent**, c’est mieux. Il existe plusieurs façons de gagner de l’argent avec ton audience.", s: { type: "title", icon: "€", title: "Vues → Argent", sub: "Module 7" } },
+  { t: "1) **La monétisation de la plateforme** : sur YouTube, il faut en général 1 000 abonnés et 4 000 heures de visionnage sur 12 mois (ou 10 millions de vues Shorts en 90 jours). Les conditions changent : vérifie-les sur YouTube.", s: { type: "crowd", rings: ["100", "500", "1 000"] } },
+  { t: "2) **Les partenariats** : des marques te paient pour parler de leur produit. Prépare un petit dossier avec tes chiffres (vues, public, contact). Et indique toujours clairement quand une vidéo est sponsorisée : c’est la loi.", s: { type: "boxes", items: [{ label: "Vues", sub: "moyenne" }, { label: "Public", sub: "âge, pays" }, { label: "Contact", sub: "email" }], highlight: -1 } },
+  { t: "3) **Vendre un service** : tu sais monter ? Tes vidéos sont ton **portfolio**. Contacte des créateurs qui n’ont pas de monteur, propose un essai, et fixe un prix clair.", s: { type: "funnel", levels: [{ label: "Créateurs contactés", value: "50" }, { label: "Réponses", value: "10" }, { label: "Essais", value: "4" }, { label: "Clients", value: "2" }] } },
+  { t: "Pour trouver tes **premiers clients** : une offre simple (« je monte ta vidéo YouTube en 48 h »), 3 exemples de ton travail, et beaucoup de messages. C’est un jeu de chiffres : plus tu contactes, plus tu signes.", s: { type: "coins", stacks: [2, 4, 7], labels: ["Mois 1", "Mois 2", "Mois 3"], icon: "€" } },
+  { t: "4) **Tes propres produits** : une formation, des presets, du coaching. Et ce que tu gagnes ? On va voir dans la partie 2 comment le **faire travailler**.", s: { type: "title", icon: "↗", title: "Et maintenant ?", sub: "Partie 2 : la bourse" } },
+], ex: "Écris ton offre en une phrase (ce que tu fais, pour qui, en combien de temps, à quel prix). Puis envoie-la à 10 créateurs cette semaine.",
+quiz: [
+  { q: "Quand une vidéo est sponsorisée, tu dois…", a: ["Le cacher", "Le dire clairement", "Le dire seulement si on te le demande"], ok: 1, why: "La loi impose d’indiquer clairement un partenariat commercial." },
+  { q: "Pour trouver tes premiers clients en montage, le plus important :", a: ["Attendre qu’ils viennent", "Une offre claire, un portfolio, et contacter beaucoup de créateurs", "Baisser tes prix à 0"], ok: 1, why: "C’est l’action régulière qui fait signer des clients." },
+]},
+]},
+{ part: "Partie 2 · La bourse", modules: [
+{ title: "Avant d’investir : les bases", warn: true, steps: [
+  { t: "Bienvenue dans la partie 2. D’abord, une règle d’or : **la bourse comporte des risques**. Tu peux perdre une partie de l’argent investi. Personne ne peut te garantir un gain.", s: { type: "shield", items: ["Gain garanti", "Sans risque", "Riche en 1 mois"] } },
+  { t: "Avant d’investir, il te faut une **épargne de précaution** : de l’argent disponible tout de suite en cas d’imprévu. On conseille souvent **3 à 6 mois de dépenses**, sur un livret (comme le Livret A).", s: { type: "coins", stacks: [3, 6], labels: ["3 mois", "6 mois"], icon: "€" } },
+  { t: "Ensuite, fais ton **budget**. Une méthode simple : **50 %** pour les besoins, **30 %** pour les envies, **20 %** pour l’épargne et l’investissement.", s: { type: "pie", slices: [50, 30, 20], labels: ["Besoins 50 %", "Envies 30 %", "Épargne 20 %"], lift: 2 } },
+  { t: "N’investis que de l’argent **dont tu n’auras pas besoin avant plusieurs années**. La bourse monte et descend : il faut pouvoir attendre quand elle baisse.", s: { type: "line", points: [100, 108, 96, 112, 104, 121, 99, 118, 130, 126, 142], label: "Ça monte et ça descend", color: "accent" } },
+  { t: "Dernier point : si tu as **moins de 18 ans**, tu ne peux pas ouvrir seul un compte pour investir. Tes parents peuvent en ouvrir un à ton nom. En attendant, apprends : c’est déjà un énorme avantage.", s: { type: "title", icon: "18", title: "Moins de 18 ans ?", sub: "Apprends dès maintenant" } },
+], ex: "Calcule tes dépenses d’un mois normal. Multiplie par 3 : c’est le minimum de ton épargne de précaution. Où en es-tu ?",
+quiz: [
+  { q: "Avant d’investir, il faut d’abord…", a: ["Un crédit", "Une épargne de précaution", "Une voiture"], ok: 1, why: "Elle te protège en cas d’imprévu, sans devoir vendre au mauvais moment." },
+  { q: "Quel argent peut-on investir en bourse ?", a: ["L’argent du loyer", "L’argent dont on n’a pas besoin avant plusieurs années", "L’argent emprunté à des amis"], ok: 1, why: "Il faut pouvoir attendre quand les marchés baissent." },
+]},
+{ title: "C’est quoi la bourse ?", steps: [
+  { t: "La **bourse**, c’est un marché où l’on achète et vend des morceaux d’entreprises. Ces morceaux s’appellent des **actions**.", s: { type: "title", icon: "▤", title: "La bourse", sub: "Module 9" } },
+  { t: "Acheter **une action**, c’est devenir **propriétaire d’un tout petit morceau** d’une entreprise. Si l’entreprise grandit et gagne plus d’argent, ton morceau prend souvent de la valeur.", s: { type: "pie", slices: [1, 1, 1, 1, 1, 1, 1, 1], labels: [], lift: 0, label: "1 action = 1 morceau" } },
+  { t: "Le **prix** d’une action change tout le temps, selon l’**offre et la demande** : plus il y a de gens qui veulent l’acheter, plus le prix monte. Plus il y a de vendeurs, plus il baisse.", s: { type: "line", points: [50, 52, 51, 55, 54, 58, 56, 61, 59, 63], label: "Le prix bouge chaque jour", color: "up" } },
+  { t: "Certaines entreprises reversent une partie de leurs bénéfices à leurs actionnaires : ce sont les **dividendes**.", s: { type: "coins", stacks: [1, 2, 3, 4], labels: ["An 1", "An 2", "An 3", "An 4"], icon: "€" } },
+  { t: "Un **indice**, c’est un groupe d’entreprises qu’on suit ensemble : le **CAC 40** (40 grandes entreprises françaises), le **S&P 500** (500 grandes entreprises américaines) ou le **MSCI World** (des entreprises du monde entier).", s: { type: "boxes", items: [{ label: "CAC 40", sub: "France" }, { label: "S&P 500", sub: "États-Unis" }, { label: "MSCI World", sub: "Monde" }], highlight: 2 } },
+], ex: "Choisis 3 entreprises dont tu utilises les produits tous les jours. Cherche si elles sont en bourse, et dans quel indice.",
+quiz: [
+  { q: "Une action, c’est…", a: ["Un prêt à une banque", "Un petit morceau d’une entreprise", "Une carte bancaire"], ok: 1, why: "L’actionnaire possède une part de l’entreprise." },
+  { q: "Qu’est-ce qu’un indice ?", a: ["Un groupe d’entreprises suivies ensemble", "Un conseil secret", "Le prix d’une seule action"], ok: 0, why: "Par exemple, le CAC 40 regroupe 40 grandes entreprises françaises." },
+]},
+{ title: "La magie des intérêts composés", steps: [
+  { t: "Les **intérêts composés**, c’est quand tes gains produisent à leur tour des gains. Ton argent fait des petits, et ces petits font aussi des petits.", s: { type: "title", icon: "∞", title: "Intérêts composés", sub: "Module 10" } },
+  { t: "Exemple **théorique** : tu places **100 € par mois**, avec un rendement moyen de **7 % par an**. Ce rendement n’est **pas garanti**, c’est juste pour comprendre le principe.", s: { type: "coins", stacks: [1, 2, 3, 4, 5], labels: [], icon: "€" } },
+  { t: "Après **10 ans** : tu as versé 12 000 €, et tu aurais environ **17 300 €**. Après **20 ans** : 24 000 € versés, environ **52 100 €**.", s: { type: "bars", series: [{ values: [12000, 24000, 36000], color: "muted", name: "Versé" }, { values: [5300, 28100, 86000], color: "up", name: "Intérêts" }], labels: ["10 ans", "20 ans", "30 ans"], unit: " €", show: 2, title: "100 €/mois à 7 %/an (exemple)" } },
+  { t: "Après **30 ans** : 36 000 € versés… et environ **122 000 €**. Les intérêts représentent alors plus des deux tiers du total. C’est l’effet **boule de neige**.", s: { type: "bars", series: [{ values: [12000, 24000, 36000], color: "muted", name: "Versé" }, { values: [5300, 28100, 86000], color: "up", name: "Intérêts" }], labels: ["10 ans", "20 ans", "30 ans"], unit: " €", show: 3, title: "100 €/mois à 7 %/an (exemple)" } },
+  { t: "La **règle de 72** : divise 72 par le rendement annuel pour savoir en combien d’années ton argent double. À 7 %, 72 ÷ 7 ≈ **10 ans**.", s: { type: "title", icon: "72", title: "La règle de 72", sub: "72 ÷ 7 % ≈ 10 ans" } },
+  { t: "Le secret, ce n’est pas d’avoir beaucoup d’argent, c’est d’avoir **du temps**. Commencer tôt avec un peu vaut souvent mieux que commencer tard avec beaucoup.", s: { type: "line", points: [0, 2, 5, 9, 14, 21, 30, 42, 57, 77, 100], label: "Le temps fait le travail", color: "up" } },
+], ex: "Avec la règle de 72, calcule en combien d’années un placement double à 4 %, à 6 % et à 9 %.",
+quiz: [
+  { q: "Avec la règle de 72, à 6 % par an, l’argent double en…", a: ["Environ 6 ans", "Environ 12 ans", "Environ 72 ans"], ok: 1, why: "72 ÷ 6 = 12." },
+  { q: "L’ingrédient le plus puissant des intérêts composés :", a: ["Le temps", "La chance", "Les conseils d’un influenceur"], ok: 0, why: "Plus tu laisses le temps travailler, plus l’effet boule de neige est fort." },
+]},
+{ title: "Actions, obligations, ETF", steps: [
+  { t: "Il existe plusieurs grandes familles de placements. Les 3 à connaître : les **actions**, les **obligations** et les **ETF**.", s: { type: "boxes", items: [{ label: "Actions", sub: "un morceau d’entreprise" }, { label: "Obligations", sub: "un prêt" }, { label: "ETF", sub: "un panier" }], highlight: -1 } },
+  { t: "Les **actions** : tu possèdes une part d’une entreprise. Elles peuvent rapporter beaucoup sur le long terme, mais elles sont **volatiles** : leur prix peut beaucoup bouger.", s: { type: "line", points: [100, 115, 92, 130, 108, 140, 118, 150], label: "Actions : ça bouge beaucoup", color: "accent" } },
+  { t: "Les **obligations** : tu **prêtes** de l’argent à un État ou à une entreprise, qui te rembourse avec des intérêts. C’est généralement moins risqué, et ça rapporte moins.", s: { type: "line", points: [100, 102, 103, 105, 106, 108, 109, 111], label: "Obligations : plus calme", color: "up" } },
+  { t: "Un **ETF** (ou tracker), c’est un **panier** qui contient des centaines d’entreprises d’un coup et qui suit un indice. Avec un ETF MSCI World, tu possèdes un petit bout de plus de 1 000 entreprises.", s: { type: "baskets", n: 1, keep: true, label: "1 ETF = des centaines d’entreprises" } },
+  { t: "Les ETF ont souvent **des frais bas**, et ils sont simples : beaucoup de débutants les utilisent pour investir sur le long terme sans choisir les entreprises une par une.", s: { type: "bars", series: [{ values: [2, 0.2], color: "accent" }], labels: ["Fonds classique", "ETF"], unit: " %", title: "Frais annuels (ordre de grandeur)" } },
+], ex: "Cherche ce qu’est un ETF « MSCI World » : combien d’entreprises il contient, de quels pays, et quels sont ses frais annuels.",
+quiz: [
+  { q: "Une obligation, c’est…", a: ["Un prêt à un État ou une entreprise", "Une part d’entreprise", "Une cryptomonnaie"], ok: 0, why: "Tu prêtes, et on te rembourse avec des intérêts." },
+  { q: "Un ETF, c’est…", a: ["Une seule action très chère", "Un panier qui suit un indice", "Un compte en banque"], ok: 1, why: "Un ETF regroupe beaucoup d’entreprises d’un coup." },
+]},
+{ title: "Risque et diversification", steps: [
+  { t: "Il n’y a **pas de rendement sans risque**. Plus un placement peut rapporter, plus il peut aussi faire perdre. Méfie-toi de tout ce qui promet le contraire.", s: { type: "title", icon: "⚖", title: "Risque et rendement", sub: "Module 12" } },
+  { t: "La bourse connaît des **krachs**. En 2008, les grands indices mondiaux ont perdu environ 40 %. En 2020, ils ont chuté d’environ 30 % en quelques semaines, avant de remonter.", s: { type: "line", points: [100, 110, 118, 70, 78, 95, 110, 125, 88, 120, 140], label: "Des chutes, puis des remontées", color: "down", mark: 3 } },
+  { t: "La protection n°1 : **ne pas mettre tous ses œufs dans le même panier**. Si tout ton argent est sur une seule entreprise et qu’elle s’écroule, tu perds tout.", s: { type: "baskets", n: 1, label: "Un seul panier" } },
+  { t: "Avec **plusieurs paniers** (plusieurs entreprises, secteurs et pays), si l’un tombe, les autres tiennent. C’est la **diversification**.", s: { type: "baskets", n: 5, label: "Plusieurs paniers" } },
+  { t: "La protection n°2, c’est **le temps**. Sur une longue durée, les baisses ont historiquement fini par être rattrapées sur les grands indices mondiaux. Mais ce n’est pas une garantie pour l’avenir.", s: { type: "line", points: [100, 95, 120, 110, 140, 125, 160, 150, 190, 210], label: "Le long terme lisse les secousses", color: "up" } },
+], ex: "Imagine que tu as 1 000 €. Écris deux façons de les investir : une très risquée et une diversifiée. Explique ce qui se passe si une entreprise fait faillite.",
+quiz: [
+  { q: "Diversifier, c’est…", a: ["Tout mettre sur la meilleure action", "Répartir sur plusieurs entreprises, secteurs et pays", "Changer de placement chaque jour"], ok: 1, why: "Si un panier tombe, les autres tiennent." },
+  { q: "Un placement promet un gros gain sans aucun risque. C’est…", a: ["Une super affaire", "Très suspect", "Normal"], ok: 1, why: "Il n’existe pas de gros rendement sans risque." },
+]},
+{ title: "Les comptes pour investir en France", steps: [
+  { t: "Pour investir, il faut un **compte** (on dit une « enveloppe »). En France, chaque enveloppe a ses règles et sa fiscalité.", s: { type: "boxes", items: [{ label: "Livret A", sub: "précaution" }, { label: "PEA", sub: "actions" }, { label: "CTO", sub: "tout" }, { label: "Assurance-vie", sub: "long terme" }], highlight: -1 } },
+  { t: "Le **Livret A** : sans risque, disponible à tout moment, plafonné à 22 950 €. Parfait pour l’**épargne de précaution**, mais il ne sert pas à investir en bourse.", s: { type: "boxes", items: [{ label: "Livret A", sub: "précaution" }, { label: "PEA", sub: "actions" }, { label: "CTO", sub: "tout" }, { label: "Assurance-vie", sub: "long terme" }], highlight: 0 } },
+  { t: "Le **PEA** (plan d’épargne en actions) : pour les actions européennes et les ETF éligibles, jusqu’à 150 000 € de versements. Après **5 ans**, tes gains ne paient plus d’impôt sur le revenu (seulement les prélèvements sociaux).", s: { type: "boxes", items: [{ label: "Livret A", sub: "précaution" }, { label: "PEA", sub: "actions" }, { label: "CTO", sub: "tout" }, { label: "Assurance-vie", sub: "long terme" }], highlight: 1 } },
+  { t: "Le **compte-titres** (CTO) : aucun plafond, et accès à tous les marchés du monde. Mais les gains sont imposés (environ 30 % avec la « flat tax »).", s: { type: "boxes", items: [{ label: "Livret A", sub: "précaution" }, { label: "PEA", sub: "actions" }, { label: "CTO", sub: "tout" }, { label: "Assurance-vie", sub: "long terme" }], highlight: 2 } },
+  { t: "L’**assurance-vie** : pour le long terme, avec des avantages fiscaux après 8 ans. Fais attention aux frais, qui peuvent être élevés selon les contrats.", s: { type: "boxes", items: [{ label: "Livret A", sub: "précaution" }, { label: "PEA", sub: "actions" }, { label: "CTO", sub: "tout" }, { label: "Assurance-vie", sub: "long terme" }], highlight: 3 } },
+  { t: "Pour les **18-25 ans** encore rattachés au foyer de leurs parents, il existe le **PEA jeune** (plafond de 20 000 €). Les règles fiscales changent : vérifie toujours sur **impots.gouv.fr** et **service-public.fr**.", s: { type: "title", icon: "✓", title: "Vérifie toujours", sub: "impots.gouv.fr · service-public.fr" } },
+], ex: "Compare les frais de 3 banques ou courtiers pour ouvrir un PEA : frais d’ouverture, frais par ordre, frais de tenue de compte.",
+quiz: [
+  { q: "Quelle enveloppe pour l’épargne de précaution ?", a: ["Le Livret A", "Le PEA", "Le compte-titres"], ok: 0, why: "Sans risque et disponible à tout moment." },
+  { q: "Après combien d’années le PEA devient-il avantageux fiscalement ?", a: ["1 an", "5 ans", "20 ans"], ok: 1, why: "Après 5 ans, plus d’impôt sur le revenu sur les gains (prélèvements sociaux seulement)." },
+]},
+{ title: "Investir régulièrement et éviter les pièges", warn: true, steps: [
+  { t: "Une méthode simple et populaire : investir **la même somme chaque mois**, quoi qu’il arrive. On appelle ça l’investissement programmé (ou « DCA »).", s: { type: "grid", rows: 2, cols: 12, label: "Chaque mois, la même somme" } },
+  { t: "L’avantage : tu n’as **pas besoin de deviner** le bon moment. Quand les prix sont bas, ta somme achète plus de parts ; quand ils sont hauts, moins. Ça lisse ton prix d’achat.", s: { type: "line", points: [100, 92, 85, 90, 97, 105, 99, 110, 118, 115], label: "Tu achètes dans les hauts ET les bas", color: "accent" } },
+  { t: "Piège n°1, **les émotions** : vendre en panique quand ça baisse, ou acheter n’importe quoi parce que « tout le monde en parle ». Garde ton plan, même quand ça secoue.", s: { type: "shield", items: ["Panique", "FOMO", "Rumeur"] } },
+  { t: "Piège n°2, **le trading** à court terme et les produits complexes (CFD, effet de levier) : la majorité des particuliers y perdent de l’argent. Les courtiers sont même obligés de l’afficher.", s: { type: "pie", slices: [75, 25], labels: ["Perdent", "Gagnent"], lift: 0, colors: ["down", "up"], label: "Particuliers sur les CFD (ordre de grandeur)" } },
+  { t: "Piège n°3, **les arnaques** : rendement garanti, pression pour payer vite, « placement secret », gourou sur les réseaux. Avant de confier ton argent, vérifie les **listes noires de l’AMF** sur amf-france.org.", s: { type: "shield", items: ["+50 % garanti", "Paie vite !", "Secret"] } },
+  { t: "Ton plan d’action : **1.** épargne de précaution, **2.** budget, **3.** un compte adapté, **4.** des placements diversifiés, **5.** la même somme chaque mois, et **6.** beaucoup de patience. Bravo, tu as terminé la formation !", s: { type: "title", icon: "★", title: "Formation terminée !", sub: "Bravo 🎉" } },
+], ex: "Écris ton plan personnel en 6 lignes : ton épargne de précaution, ton budget, l’enveloppe qui te convient, le type de placement, la somme mensuelle et ta durée.",
+quiz: [
+  { q: "Le DCA (investissement programmé), c’est…", a: ["Investir la même somme chaque mois", "Tout investir le même jour", "Vendre dès que ça baisse"], ok: 0, why: "Ça évite de devoir deviner le bon moment." },
+  { q: "Quelqu’un te promet +50 % garantis si tu paies aujourd’hui. Tu…", a: ["Fonces", "Vérifies sur le site de l’AMF et refuses", "Envoies la moitié"], ok: 1, why: "Rendement garanti + pression = signes classiques d’arnaque." },
+]},
+]},
+];
+
+/* =====================================================================
+   MOTEUR 3D
+   ===================================================================== */
+const canvas = document.getElementById("stage");
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let renderer, scene, camera, current = null, previous = null, sceneStart = 0, prevStart = 0;
+const C = {};
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  ["accent", "up", "down", "gold", "muted", "stage-fg", "surface-2"].forEach(k => { C[k] = cs.getPropertyValue("--" + k).trim() || "#888"; });
+}
+function col(name) { return new THREE.Color(C[name] || name); }
+
+function initThree() {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: false });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 100);
+  camera.position.set(0, 0.8, 10.5);
+  camera.lookAt(0, 0, 0);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+  const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(4, 7, 8); scene.add(key);
+  const rim = new THREE.PointLight(0x9c7cff, 0.9, 30); rim.position.set(-6, 3, 4); scene.add(rim);
+  resize();
+  new ResizeObserver(resize).observe(canvas.parentElement);
+}
+function resize() {
+  const w = canvas.parentElement.clientWidth, h = canvas.parentElement.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+
+/* --- helpers --- */
+function mat(color, opts = {}) { return new THREE.MeshStandardMaterial({ color: col(color), roughness: 0.35, metalness: 0.25, transparent: true, ...opts }); }
+function label(text, o = {}) {
+  const size = o.size || 64, pad = 28;
+  const c = document.createElement("canvas"), x = c.getContext("2d");
+  const font = `${o.weight || 700} ${size}px ${o.mono ? "JetBrains Mono" : o.display ? "Unbounded" : "Figtree"}, sans-serif`;
+  x.font = font;
+  const w = Math.ceil(x.measureText(text).width) + pad * 2, h = Math.ceil(size * 1.45) + (o.bg ? pad : 0);
+  c.width = w; c.height = h;
+  x.font = font; x.textAlign = "center"; x.textBaseline = "middle";
+  if (o.bg) { x.fillStyle = C[o.bg] || o.bg; roundRect(x, 4, 4, w - 8, h - 8, h / 2.6); x.fill(); }
+  x.fillStyle = C[o.color || "stage-fg"] || o.color;
+  x.fillText(text, w / 2, h / 2 + 2);
+  const tex = new THREE.CanvasTexture(c); tex.anisotropy = 4;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+  const height = o.h || 0.5; sp.scale.set(height * w / h, height, 1);
+  return sp;
+}
+function roundRect(x, a, b, w, h, r) { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
+const ease = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3);
+const fmt = n => n.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+function coin(r = 0.5, color = "gold") {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, r * 0.22, 40), mat(color, { metalness: 0.6, roughness: 0.25 }));
+  body.rotation.x = Math.PI / 2; g.add(body);
+  const rimM = new THREE.Mesh(new THREE.TorusGeometry(r * 0.82, r * 0.05, 8, 40), mat("stage-fg", { metalness: 0.3 }));
+  rimM.position.z = r * 0.12; g.add(rimM);
+  return g;
+}
+
+/* --- scènes --- */
+const SCENES = {
+  title(p) {
+    const g = new THREE.Group();
+    const c = coin(1.25, "accent"); c.position.y = 0.7; g.add(c);
+    const icon = label(p.icon || "★", { size: 120, h: 1.1, display: true }); icon.position.set(0, 0.7, 0.4); g.add(icon);
+    const t = label(p.title, { size: 72, h: 0.72, display: true, weight: 800 }); t.position.set(0, -1.35, 0); g.add(t);
+    if (p.sub) { const s = label(p.sub, { size: 44, h: 0.4, mono: true, color: "accent" }); s.position.set(0, -2.1, 0); g.add(s); }
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.02, 8, 90), mat("accent", { opacity: 0.5 })); ring.position.y = 0.7; g.add(ring);
+    return { group: g, update(t) { c.rotation.y = Math.sin(t * 1.2) * 0.5; ring.rotation.x = 1.2 + Math.sin(t * 0.6) * 0.2; ring.rotation.y = t * 0.3; } };
+  },
+  phone(p) {
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.3, 4.4, 0.22), mat("surface-2", { metalness: 0.4 })); g.add(body);
+    const cards = [];
+    for (let i = 0; i < 6; i++) {
+      const card = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.95, 0.05), mat(i === 2 ? "up" : "muted", { opacity: 0.9 }));
+      card.position.z = 0.15; g.add(card); cards.push(card);
+    }
+    const mask = 1.95;
+    const l = label(p.label, { size: 52, h: 0.5, bg: "accent", color: "#ffffff" }); l.position.set(3.6, 1.2, 0); g.add(l);
+    return { group: g, update(t) {
+      cards.forEach((c, i) => {
+        let y = ((i * 1.15 - t * 0.55) % 6.9 + 6.9) % 6.9 - 3.45;
+        c.position.y = y; c.visible = Math.abs(y) < mask;
+        const hot = i === 2 && Math.abs(y) < 0.8;
+        c.position.z = hot ? 0.15 + 0.6 * (1 - Math.abs(y) / 0.8) : 0.15;
+        c.scale.setScalar(hot ? 1 + 0.25 * (1 - Math.abs(y) / 0.8) : 1);
+      });
+      g.rotation.y = -0.25 + Math.sin(t * 0.5) * 0.08;
+    } };
+  },
+  crowd(p) {
+    const g = new THREE.Group(), items = [];
+    const geo = new THREE.SphereGeometry(0.09, 12, 12);
+    const rings = p.rings || ["", "", ""], counts = [8, 22, 44], radius = [0.8, 1.7, 2.7];
+    rings.forEach((name, r) => {
+      for (let i = 0; i < counts[r]; i++) {
+        const a = (i / counts[r]) * Math.PI * 2;
+        const m = new THREE.Mesh(geo, mat(r === 2 ? "up" : r === 1 ? "accent" : "stage-fg"));
+        m.position.set(Math.cos(a) * radius[r], Math.sin(a) * radius[r] * 0.9, 0);
+        g.add(m); items.push({ o: m, delay: r * 1.1 + (i / counts[r]) * 0.5, base: m.scale.clone() });
+      }
+      const l = label(name, { size: 40, h: 0.36, mono: true, color: r === 2 ? "up" : "stage-fg" });
+      l.position.set(radius[r] + 0.95, -radius[r] * 0.55, 0.1); g.add(l);
+      items.push({ o: l, delay: r * 1.1 + 0.4, base: l.scale.clone() });
+    });
+    const center = coin(0.45, "accent"); g.add(center);
+    return { group: g, update(t) {
+      items.forEach(it => { const k = Math.max(0.001, ease((t - it.delay) * 1.5)); it.o.scale.copy(it.base).multiplyScalar(k); });
+      g.rotation.z = Math.sin(t * 0.3) * 0.05; center.rotation.y = t;
+    } };
+  },
+  orbit(p) {
+    const g = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.9, 1), mat("accent", { flatShading: true })); g.add(core);
+    const cl = label(p.center, { size: 46, h: 0.42, display: true }); cl.position.set(0, -1.45, 0.4); g.add(cl);
+    const sats = (p.items || []).map((txt, i, arr) => {
+      const s = new THREE.Group();
+      const ball = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 20), mat(i % 2 ? "up" : "gold")); s.add(ball);
+      const l = label(txt, { size: 40, h: 0.38, bg: "surface-2" }); l.position.y = 0.48; s.add(l);
+      g.add(s); return { s, a: (i / arr.length) * Math.PI * 2 };
+    });
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.9, 0.015, 6, 100), mat("stage-fg", { opacity: 0.25 })); ring.rotation.x = Math.PI / 2.4; g.add(ring);
+    return { group: g, update(t) {
+      core.rotation.y = t * 0.6; core.rotation.x = t * 0.25;
+      sats.forEach(({ s, a }) => { const ang = a + t * 0.35; s.position.set(Math.cos(ang) * 3.4, Math.sin(ang) * 1.6, Math.sin(ang) * 1.2); });
+    } };
+  },
+  line(p) {
+    const g = new THREE.Group(), pts = p.points, n = pts.length;
+    const min = Math.min(...pts), max = Math.max(...pts), W = 8.4, H = 3.6;
+    const v = pts.map((y, i) => new THREE.Vector3(-W / 2 + (i / (n - 1)) * W, -H / 2 + ((y - min) / (max - min || 1)) * H - 0.3, 0));
+    const curve = new THREE.CatmullRomCurve3(v);
+    const tube = new THREE.TubeGeometry(curve, 160, 0.07, 10, false);
+    const total = tube.index.count;
+    const m = new THREE.Mesh(tube, mat(p.color || "accent", { emissive: col(p.color || "accent"), emissiveIntensity: 0.35 })); g.add(m);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 20), mat("stage-fg")); g.add(head);
+    for (let i = 0; i <= 4; i++) {
+      const gl = new THREE.Mesh(new THREE.BoxGeometry(W, 0.01, 0.01), mat("stage-fg", { opacity: 0.12 }));
+      gl.position.y = -H / 2 - 0.3 + (i / 4) * H; g.add(gl);
+    }
+    const l = label(p.label, { size: 46, h: 0.44, bg: p.color || "accent", color: "#ffffff" }); l.position.set(0, H / 2 + 0.55, 0); g.add(l);
+    let markEl = null;
+    if (p.mark != null) { markEl = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.05, 10, 40), mat("down")); markEl.position.copy(v[p.mark]); markEl.position.z = 0.1; g.add(markEl); }
+    return { group: g, update(t) {
+      const k = ease(t / 2.6); tube.setDrawRange(0, Math.floor(total * k / 3) * 3);
+      head.position.copy(curve.getPoint(Math.max(0.001, k)));
+      if (markEl) { markEl.visible = k > (p.mark / (n - 1)); markEl.scale.setScalar(1 + Math.sin(t * 5) * 0.12); }
+      g.rotation.y = Math.sin(t * 0.4) * 0.12;
+    } };
+  },
+  bars(p) {
+    const g = new THREE.Group(), series = p.series, n = series[0].values.length;
+    const totals = series[0].values.map((_, i) => series.reduce((s, se) => s + se.values[i], 0));
+    const max = Math.max(...totals), W = Math.min(8.6, n * 1.6), H = 3.6, bw = Math.min(1.1, (W / n) * 0.62);
+    const bars = [];
+    for (let i = 0; i < n; i++) {
+      const x = -W / 2 + (i + 0.5) * (W / n);
+      let base = -2;
+      series.forEach((se, si) => {
+        const h = Math.max(0.02, (se.values[i] / max) * H);
+        const b = new THREE.Mesh(new THREE.BoxGeometry(bw, 1, bw), mat(se.color || "accent", { emissive: col(se.color || "accent"), emissiveIntensity: 0.15 }));
+        b.userData = { h, base, i, si }; b.position.x = x; g.add(b); bars.push(b); base += h;
+      });
+      if (!p.wave) {
+        const vl = label(fmt(totals[i]) + (p.unit || ""), { size: 40, h: 0.36, mono: true }); vl.position.set(x, -2 + (totals[i] / max) * H + 0.35, 0.2);
+        vl.userData = { i, value: true }; g.add(vl); bars.push(vl);
+      }
+      if (p.labels && p.labels[i]) { const al = label(p.labels[i], { size: 38, h: 0.34, color: "stage-fg" }); al.position.set(x, -2.45, 0.3); g.add(al); }
+    }
+    if (p.title) { const tl = label(p.title, { size: 44, h: 0.42, bg: "accent", color: "#ffffff" }); tl.position.set(0, 2.35, 0); g.add(tl); }
+    if (series.length > 1) series.forEach((se, si) => {
+      const lg = label("■ " + se.name, { size: 36, h: 0.32, color: se.color }); lg.position.set(-W / 2 + 0.8 + si * 2.2, 1.75, 0.2); g.add(lg);
+    });
+    const show = p.show || n;
+    return { group: g, update(t) {
+      bars.forEach(b => {
+        const visible = b.userData.i < show;
+        const k = visible ? ease((t - b.userData.i * 0.25) / 1.2) : 0;
+        if (b.userData.value) { b.visible = k > 0.95; return; }
+        let h = b.userData.h * k;
+        if (p.wave) h = b.userData.h * (0.55 + 0.45 * Math.sin(t * 4 + b.userData.i * 0.9)) * k;
+        b.scale.y = Math.max(h, 0.001); b.position.y = -2 + (b.userData.base + 2) * k + h / 2;
+      });
+      g.rotation.y = -0.18 + Math.sin(t * 0.4) * 0.1; g.rotation.x = 0.08;
+    } };
+  },
+  funnel(p) {
+    const g = new THREE.Group(), lv = p.levels, n = lv.length, rings = [];
+    lv.forEach((L, i) => {
+      const r = 2.2 - i * (1.6 / Math.max(1, n - 1));
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.92, 0.7, 48), mat(i === n - 1 ? "up" : i === 0 ? "muted" : "accent", { opacity: 0.92 }));
+      m.position.set(-1.2, 1.5 - i * 1.05, 0); m.userData = { i }; g.add(m); rings.push(m);
+      const l = label(`${L.value}  ${L.label}`, { size: 44, h: 0.42, mono: false, bg: "surface-2" });
+      l.position.set(2.6, 1.5 - i * 1.05, 0.3); l.userData = { i, lab: true }; g.add(l); rings.push(l);
+    });
+    return { group: g, update(t) {
+      rings.forEach(r => { const k = ease((t - r.userData.i * 0.45) * 1.6); if (r.userData.lab) { r.material.opacity = k; } else { r.scale.set(k, k, k); r.rotation.y = t * 0.4; } });
+    } };
+  },
+  timer(p) {
+    const g = new THREE.Group();
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.9, 0.12, 16, 100), mat("accent", { emissive: col("accent"), emissiveIntensity: 0.4 })); g.add(ring);
+    const nums = [];
+    for (let i = p.from; i >= 1; i--) { const l = label(String(i), { size: 160, h: 1.8, display: true, weight: 800 }); l.visible = false; g.add(l); nums.push(l); }
+    const end = label(p.end, { size: 80, h: 0.85, display: true, weight: 800, color: "up" }); end.visible = false; g.add(end);
+    return { group: g, update(t) {
+      const idx = Math.floor(t);
+      nums.forEach((l, i) => { l.visible = i === idx; const f = t - idx; l.material.opacity = 1 - f * 0.6; });
+      end.visible = idx >= nums.length; end.scale.setScalar(1 + Math.sin(t * 4) * 0.03);
+      ring.rotation.z = -t * 1.5; ring.scale.setScalar(1 + Math.max(0, 0.15 - (t % 1) * 0.15));
+    } };
+  },
+  shield(p) {
+    const g = new THREE.Group();
+    const tri = new THREE.Mesh(new THREE.ConeGeometry(1.25, 2.1, 3), mat("down", { emissive: col("down"), emissiveIntensity: 0.35, flatShading: true }));
+    tri.position.set(0, 0.25, 0); g.add(tri);
+    const ex = label("!", { size: 140, h: 1.2, display: true, weight: 800 }); ex.position.set(0, 0.05, 1.1); g.add(ex);
+    const items = (p.items || []).map((txt, i, arr) => {
+      const it = new THREE.Group();
+      const l = label(txt, { size: 42, h: 0.42, bg: "surface-2" }); it.add(l);
+      const strike = new THREE.Mesh(new THREE.BoxGeometry(l.scale.x * 1.05, 0.06, 0.05), mat("down")); strike.position.z = 0.05; it.add(strike);
+      const a = (i / arr.length) * Math.PI * 2 + 0.5;
+      it.position.set(Math.cos(a) * 3.3, Math.sin(a) * 1.7, 0.2); g.add(it); return { it, strike, a, i };
+    });
+    return { group: g, update(t) {
+      tri.rotation.y = t * 0.7; ex.scale.setScalar(1.2 * (1 + Math.sin(t * 5) * 0.05));
+      items.forEach(o => { o.it.position.y += Math.sin(t * 2 + o.i) * 0.002; const k = ease((t - 0.8 - o.i * 0.4) * 2); o.strike.scale.x = Math.max(0.001, k); o.it.rotation.z = Math.sin(t * 9 + o.i) * 0.03 * k; });
+    } };
+  },
+  timeline(p) {
+    const g = new THREE.Group(), clips = [];
+    const track = new THREE.Mesh(new THREE.BoxGeometry(9, 0.05, 0.6), mat("stage-fg", { opacity: 0.15 })); track.position.y = -0.4; g.add(track);
+    const widths = [1.4, 0.5, 1.1, 0.4, 0.9, 0.6, 1.2, 0.35, 0.8];
+    const silent = [1, 3, 5, 7];
+    let x = -4.5;
+    widths.forEach((w, i) => {
+      const isGap = silent.includes(i);
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w - 0.05, 0.7, 0.4), mat(isGap ? "down" : i % 3 === 0 ? "accent" : i % 3 === 1 ? "up" : "gold", { opacity: 0.95 }));
+      m.userData = { w, x0: x + w / 2, gap: isGap }; m.position.set(x + w / 2, -0.05, 0); g.add(m); clips.push(m); x += w;
+    });
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.6, 0.05), mat("stage-fg")); g.add(head);
+    const l = label(p.label, { size: 48, h: 0.46, bg: "accent", color: "#ffffff" }); l.position.set(0, 1.6, 0); g.add(l);
+    return { group: g, update(t) {
+      if (p.cuts) {
+        const k = ease((t - 1) / 1.4); let cx = -4.5 + (silentWidth() * k) / 2;
+        clips.forEach(c => { const w = c.userData.gap ? c.userData.w * (1 - k) : c.userData.w; c.scale.x = c.userData.gap ? Math.max(0.001, 1 - k) : 1; c.position.x = cx + w / 2; cx += w; });
+      }
+      head.position.set(-4.5 + ((t * 1.6) % 9), 0.1, 0.3);
+      g.rotation.x = 0.25; g.rotation.y = Math.sin(t * 0.4) * 0.12;
+    } };
+    function silentWidth() { return silent.reduce((s, i) => s + widths[i], 0); }
+  },
+  thumb(p) {
+    const g = new THREE.Group();
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(5.6, 3.15, 0.12), mat(p.mode === "contrast" ? "gold" : "accent", { metalness: 0.1 })); g.add(frame);
+    const faceG = new THREE.Group();
+    faceG.add(new THREE.Mesh(new THREE.SphereGeometry(0.85, 32, 32), mat("stage-fg", { metalness: 0 })));
+    [-0.3, 0.3].forEach(dx => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 12), mat("#1b1533")); e.position.set(dx, 0.15, 0.8); faceG.add(e); });
+    const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.05, 8, 20, Math.PI), mat("#1b1533")); mouth.position.set(0, -0.25, 0.82); mouth.rotation.z = Math.PI; faceG.add(mouth);
+    faceG.position.set(-1.5, -0.2, 0.5); g.add(faceG);
+    const txt = label(p.text, { size: 90, h: p.text.length > 8 ? 0.6 : 0.9, display: true, weight: 800, color: p.mode === "contrast" ? "#17142B" : "#ffffff" }); txt.position.set(1.2, 0.6, 0.4); g.add(txt);
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.8, 3), mat("down")); arrow.position.set(1.2, -0.7, 0.5); arrow.rotation.z = Math.PI; g.add(arrow);
+    if (p.mode === "subs") { faceG.position.set(0, 0.4, 0.5); txt.position.set(0, -1.05, 0.4); arrow.visible = false; }
+    let mini = null;
+    if (p.mode === "thumb") { mini = g.clone(); mini.scale.setScalar(0.28); mini.position.set(4.2, -1.3, 0.5); g.add(mini); const ml = label("en petit", { size: 34, h: 0.3, mono: true, color: "up" }); ml.position.set(4.2, -2.05, 0.5); g.add(ml); }
+    return { group: g, update(t) { g.rotation.y = Math.sin(t * 0.5) * 0.2; arrow.position.y = -0.7 + Math.sin(t * 4) * 0.12; if (mini) mini.rotation.y = -g.rotation.y; } };
+  },
+  boxes(p) {
+    const g = new THREE.Group(), items = p.items, n = items.length, gap = Math.min(2.6, 9 / n), objs = [];
+    items.forEach((it, i) => {
+      const x = (i - (n - 1) / 2) * gap, hot = i === p.highlight;
+      const b = new THREE.Mesh(new THREE.BoxGeometry(gap * 0.8, 1.6, 1.2), mat(hot ? "up" : p.highlight >= 0 ? "muted" : "accent", { opacity: hot || p.highlight < 0 ? 0.95 : 0.55 }));
+      b.position.set(x, 0, 0); g.add(b);
+      const l = label(it.label, { size: 48, h: gap < 2.3 ? 0.36 : 0.44, display: true, weight: 700 }); l.position.set(x, 0.15, 0.75); g.add(l);
+      const s = label(it.sub, { size: 36, h: 0.3, color: "stage-fg" }); s.position.set(x, -0.38, 0.75); g.add(s);
+      objs.push({ b, l, s, i, hot });
+    });
+    return { group: g, update(t) {
+      objs.forEach(o => { const k = ease((t - o.i * 0.2) * 2); const y = (o.hot ? 0.35 + Math.sin(t * 2.5) * 0.12 : Math.sin(t * 1.5 + o.i) * 0.06); [o.b, o.l, o.s].forEach((e, j) => { e.position.y = y + (j === 1 ? 0.15 : j === 2 ? -0.38 : 0) - (1 - k) * 2; }); o.b.rotation.y = Math.sin(t * 0.8 + o.i) * 0.15; });
+    } };
+  },
+  coins(p) {
+    const g = new THREE.Group(), stacks = p.stacks, n = stacks.length, all = [];
+    stacks.forEach((cnt, i) => {
+      const x = (i - (n - 1) / 2) * 1.9;
+      for (let j = 0; j < cnt; j++) {
+        const c = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.16, 36), mat("gold", { metalness: 0.65, roughness: 0.25 }));
+        c.userData = { y: -1.6 + j * 0.18, delay: i * 0.35 + j * 0.12 }; c.position.set(x, 4, 0); g.add(c); all.push(c);
+      }
+      if (p.labels && p.labels[i]) { const l = label(p.labels[i], { size: 38, h: 0.34, mono: true }); l.position.set(x, -2.2, 0.6); g.add(l); }
+      if (p.icon) { const ic = label(p.icon, { size: 60, h: 0.5, display: true, color: "gold" }); ic.position.set(x, -1.6 + cnt * 0.18 + 0.55, 0.3); ic.userData = { delay: i * 0.35 + cnt * 0.12, icon: true }; g.add(ic); all.push(ic); }
+    });
+    return { group: g, update(t) {
+      all.forEach(c => { const k = ease((t - c.userData.delay) * 2.2); if (c.userData.icon) { c.material.opacity = k; return; } c.position.y = 4 + (c.userData.y - 4) * k; c.rotation.y = t; });
+      g.rotation.x = 0.3; g.rotation.y = Math.sin(t * 0.4) * 0.2;
+    } };
+  },
+  pie(p) {
+    const g = new THREE.Group(), total = p.slices.reduce((a, b) => a + b, 0), parts = [];
+    let a0 = 0;
+    const palette = p.colors || ["accent", "gold", "up", "muted", "accent", "gold", "up", "muted"];
+    p.slices.forEach((v, i) => {
+      const len = (v / total) * Math.PI * 2;
+      const geo = new THREE.CylinderGeometry(2, 2, 0.6, 48, 1, false, a0, len - 0.02);
+      const m = new THREE.Mesh(geo, mat(palette[i % palette.length]));
+      const mid = a0 + len / 2; m.userData = { mid, i };
+      g.add(m); parts.push(m);
+      if (p.labels && p.labels[i]) {
+        const l = label(p.labels[i], { size: 40, h: 0.38, bg: "surface-2" });
+        l.position.set(Math.sin(mid) * 3.3, 0.8, Math.cos(mid) * 3.3); g.add(l); l.userData = { lab: true };
+      }
+      a0 += len;
+    });
+    if (p.label) { const l = label(p.label, { size: 48, h: 0.46, bg: "accent", color: "#ffffff" }); l.position.set(0, 2.4, 0); g.add(l); }
+    g.rotation.x = 0.55;
+    return { group: g, update(t) {
+      parts.forEach(m => { const lift = m.userData.i === p.lift || (p.lift === 0 && m.userData.i === 0 && !p.colors) ? ease(t - 0.8) * 0.6 : 0; m.position.set(Math.sin(m.userData.mid) * lift, lift * 0.6, Math.cos(m.userData.mid) * lift); });
+      g.rotation.y = t * 0.25;
+    } };
+  },
+  baskets(p) {
+    const g = new THREE.Group(), n = p.n, baskets = [];
+    const W = n === 1 ? 0 : 8;
+    for (let i = 0; i < n; i++) {
+      const bx = n === 1 ? 0 : -W / 2 + (i / (n - 1)) * W;
+      const grp = new THREE.Group(); grp.position.x = bx;
+      const r = n === 1 ? 1.5 : 0.75;
+      const b = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.7, r * 0.9, 32, 1, true), mat("gold", { side: THREE.DoubleSide, metalness: 0.2, roughness: 0.6 }));
+      b.position.y = -0.8; grp.add(b);
+      const eggs = [];
+      const count = n === 1 ? 14 : 3;
+      for (let j = 0; j < count; j++) {
+        const e = new THREE.Mesh(new THREE.SphereGeometry(n === 1 ? 0.28 : 0.22, 16, 16), mat("stage-fg", { metalness: 0 }));
+        e.scale.y = 1.25; const a = (j / count) * Math.PI * 2;
+        e.userData = { x: Math.cos(a) * r * 0.5, z: Math.sin(a) * r * 0.5, y: -0.45 + (j % 3) * 0.12, vx: (Math.random() - 0.5) * 2 };
+        grp.add(e); eggs.push(e);
+      }
+      g.add(grp); baskets.push({ grp, b, eggs, falls: n === 1 ? !p.keep : i === 2 });
+    }
+    const l = label(p.label, { size: 48, h: 0.46, bg: n === 1 && !p.keep ? "down" : "up", color: "#ffffff" }); l.position.set(0, 2.2, 0); g.add(l);
+    return { group: g, update(t) {
+      baskets.forEach(o => {
+        const fall = o.falls ? ease((t - 2) / 1.2) : 0;
+        o.grp.rotation.z = o.falls ? fall * 1.1 : Math.sin(t * 1.5) * 0.04;
+        if (o.falls && fall > 0.05) o.b.material.color = col("down");
+        o.eggs.forEach(e => { const d = e.userData; e.position.set(d.x + (o.falls ? d.vx * fall : 0), d.y - (o.falls ? fall * 3.2 : 0), d.z); e.material.opacity = o.falls ? 1 - fall * 0.8 : 1; });
+      });
+      g.rotation.y = Math.sin(t * 0.4) * 0.15; g.rotation.x = 0.15;
+    } };
+  },
+  grid(p) {
+    const g = new THREE.Group(), cubes = [], s = Math.min(0.6, 8.6 / p.cols), gap = s * 1.2;
+    for (let r = 0; r < p.rows; r++) for (let c = 0; c < p.cols; c++) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), mat("muted", { opacity: 0.5 }));
+      m.position.set((c - (p.cols - 1) / 2) * gap, ((p.rows - 1) / 2 - r) * gap - 0.3, 0); m.userData = { k: r * p.cols + c }; g.add(m); cubes.push(m);
+    }
+    const l = label(p.label, { size: 48, h: 0.46, bg: "accent", color: "#ffffff" }); l.position.set(0, (p.rows / 2) * gap + 0.4, 0); g.add(l);
+    const N = cubes.length, accentC = col("up"), mutedC = col("muted");
+    return { group: g, update(t) {
+      cubes.forEach(m => { const on = m.userData.k < (t / 3.2) * N; m.material.color.copy(on ? accentC : mutedC); m.material.opacity = on ? 1 : 0.4; m.rotation.y = on ? Math.min(Math.PI / 2, (t - (m.userData.k / N) * 3.2) * 4) : 0; });
+      g.rotation.x = 0.25; g.rotation.y = Math.sin(t * 0.4) * 0.15;
+    } };
+  },
+};
+
+function buildScene(s) {
+  const b = SCENES[s.type](s);
+  b.group.traverse(o => { if (o.material) { o.material.userData.baseOpacity = o.material.opacity; } });
+  scene.add(b.group);
+  return b;
+}
+function disposeScene(b) {
+  scene.remove(b.group);
+  b.group.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+}
+function setFade(b, k) {
+  b.group.traverse(o => { if (o.material && o.material.userData.baseOpacity != null && !o.userData.lab) o.material.opacity = Math.min(o.material.opacity, o.material.userData.baseOpacity * k); });
+}
+function showScene(s) {
+  if (!renderer) return;
+  if (previous) disposeScene(previous);
+  previous = current; prevStart = performance.now();
+  current = buildScene(s); sceneStart = performance.now();
+}
+function loop(now) {
+  if (current) {
+    const t = reduceMotion ? 6 : (now - sceneStart) / 1000;
+    current.update(t);
+    const k = ease((now - sceneStart) / 450);
+    current.group.scale.setScalar(0.85 + 0.15 * k);
+    if (k < 1 || !current.settled) {
+      current.group.traverse(o => { if (o.material && o.material.userData.baseOpacity != null && !o.userData.lab) o.material.opacity = o.material.userData.baseOpacity * k; });
+      if (k >= 1) current.settled = true;
+    }
+  }
+  if (previous) {
+    const k = 1 - ease((now - prevStart) / 350);
+    if (k <= 0) { disposeScene(previous); previous = null; }
+    else { previous.group.scale.setScalar(0.85 + 0.15 * k); setFade(previous, k); }
+  }
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+/* =====================================================================
+   LECTEUR
+   ===================================================================== */
+const flat = [];
+COURSE.forEach((part, pi) => part.modules.forEach((m, mi) => flat.push({ ...m, part: part.part, pi, num: flat.length + 1 })));
+const $ = id => document.getElementById(id);
+let mod = 0, step = 0, playing = false, timer = null;
+const done = new Set(load("aa-done") || []);
+function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } }
+function rich(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); }
+
+function renderSyllabus() {
+  const list = $("syllabus-list"); list.innerHTML = "";
+  COURSE.forEach((part, pi) => {
+    const h = document.createElement("div"); h.className = "part-title"; h.textContent = part.part; list.appendChild(h);
+    flat.filter(m => m.pi === pi).forEach(m => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "mod";
+      b.setAttribute("aria-current", String(m.num - 1 === mod));
+      b.innerHTML = `<span class="mod-num">${String(m.num).padStart(2, "0")}</span><span class="mod-name"></span><span class="mod-check">${done.has(m.num) ? "✓" : ""}</span>`;
+      b.querySelector(".mod-name").textContent = m.title;
+      b.addEventListener("click", () => { openModule(m.num - 1); if (innerWidth < 900) $("stage").scrollIntoView({ behavior: "smooth", block: "center" }); });
+      list.appendChild(b);
+    });
+  });
+  $("progress-text").textContent = `${done.size} / ${flat.length}`;
+  $("progress-fill").style.width = (done.size / flat.length * 100) + "%";
+}
+function openModule(i) { mod = i; step = 0; $("wrap-up").hidden = true; renderSyllabus(); renderStep(); save("aa-pos", { mod, step }); }
+function renderStep() {
+  const m = flat[mod], st = m.steps[step];
+  $("lesson-eyebrow").textContent = `${m.part} · Module ${m.num}`;
+  $("lesson-title").textContent = m.title;
+  $("stage-tag").textContent = `Module ${m.num} · ${m.title}`;
+  $("stage-time").textContent = `${step + 1} / ${m.steps.length}`;
+  $("caption").innerHTML = rich(st.t);
+  const dots = $("dots"); dots.innerHTML = "";
+  m.steps.forEach((_, i) => {
+    const d = document.createElement("button"); d.type = "button"; d.className = "dot" + (i === step ? " on" : i < step ? " done" : "");
+    d.setAttribute("aria-label", `Étape ${i + 1}`); d.addEventListener("click", () => { step = i; renderStep(); }); dots.appendChild(d);
+  });
+  $("btn-prev").disabled = mod === 0 && step === 0;
+  showScene(st.s);
+  if (step === m.steps.length - 1) showWrapUp(); else $("wrap-up").hidden = true;
+  save("aa-pos", { mod, step });
+  schedule();
+}
+function showWrapUp() {
+  const m = flat[mod], box = $("wrap-up");
+  box.innerHTML = "";
+  const ex = document.createElement("div"); ex.className = "card";
+  ex.innerHTML = `<h3>🎯 Exercice</h3><p></p>`; ex.querySelector("p").textContent = m.ex; box.appendChild(ex);
+  const qz = document.createElement("div"); qz.className = "card"; qz.innerHTML = `<h3>🧠 Quiz</h3>`;
+  let good = 0, answered = 0;
+  m.quiz.forEach(q => {
+    const qq = document.createElement("div"); qq.className = "quiz-q"; qq.textContent = q.q; qz.appendChild(qq);
+    const opts = document.createElement("div"); opts.className = "quiz-opts"; qz.appendChild(opts);
+    const why = document.createElement("div"); why.className = "why"; why.hidden = true; why.textContent = q.why;
+    q.a.forEach((a, ai) => {
+      const o = document.createElement("button"); o.type = "button"; o.className = "opt"; o.textContent = a;
+      o.addEventListener("click", () => {
+        if (opts.dataset.done) return; opts.dataset.done = "1"; answered++;
+        o.classList.add(ai === q.ok ? "right" : "wrong"); opts.children[q.ok].classList.add("right"); why.hidden = false;
+        if (ai === q.ok) good++;
+        if (answered === m.quiz.length) { done.add(m.num); save("aa-done", [...done]); renderSyllabus(); result.textContent = `${good} / ${m.quiz.length} bonnes réponses. Module validé ✓`; result.hidden = false; }
+      });
+      opts.appendChild(o);
+    });
+    qz.appendChild(why);
+  });
+  const result = document.createElement("p"); result.className = "why"; result.hidden = true; qz.appendChild(result);
+  box.appendChild(qz);
+  if (mod < flat.length - 1) {
+    const nx = document.createElement("div"); nx.className = "card";
+    nx.innerHTML = `<h3>➡ Module suivant</h3><p></p><button class="btn primary" type="button">Commencer</button>`;
+    nx.querySelector("p").textContent = flat[mod + 1].title;
+    nx.querySelector("button").addEventListener("click", () => openModule(mod + 1));
+    box.appendChild(nx);
+  }
+  if (m.warn) {
+    const w = document.createElement("div"); w.className = "card warn";
+    w.innerHTML = `<h3>⚠ Rappel</h3><p>Ce module est éducatif. Ce n’est pas un conseil personnalisé : chaque situation est différente. En cas de doute, demande à un conseiller agréé.</p>`;
+    box.appendChild(w);
+  }
+  box.hidden = false;
+}
+function next() {
+  const m = flat[mod];
+  if (step < m.steps.length - 1) { step++; renderStep(); }
+  else if (playing && mod < flat.length - 1) { openModule(mod + 1); }
+  else if (playing) { setPlaying(false); }
+}
+function prev() { if (step > 0) { step--; renderStep(); } else if (mod > 0) { mod--; step = flat[mod].steps.length - 1; renderSyllabus(); renderStep(); } }
+function schedule() {
+  clearTimeout(timer);
+  if (!playing) return;
+  const txt = flat[mod].steps[step].t.length;
+  timer = setTimeout(next, Math.max(5500, txt * 62));
+}
+function setPlaying(v) { playing = v; $("btn-play").textContent = v ? "❚❚ Pause" : "▶ Lecture auto"; schedule(); }
+
+$("btn-next").addEventListener("click", () => { if (step === flat[mod].steps.length - 1 && mod < flat.length - 1) openModule(mod + 1); else next(); });
+$("btn-prev").addEventListener("click", prev);
+$("btn-play").addEventListener("click", () => setPlaying(!playing));
+$("btn-record").addEventListener("click", () => {
+  document.body.classList.add("record"); $("btn-exit-record").hidden = false; setPlaying(true);
+  document.documentElement.requestFullscreen?.().catch(() => {});
+});
+function exitRecord() { document.body.classList.remove("record"); $("btn-exit-record").hidden = true; setPlaying(false); if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); }
+$("btn-exit-record").addEventListener("click", exitRecord);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.body.classList.contains("record")) exitRecord();
+  if (e.target.closest("button") && (e.key === " " || e.key === "Enter")) return;
+  if (e.key === "ArrowRight") next(); if (e.key === "ArrowLeft") prev();
+  if (e.key === " ") { e.preventDefault(); setPlaying(!playing); }
+});
+$("btn-theme").addEventListener("click", () => {
+  const root = document.documentElement, dark = getComputedStyle(root).getPropertyValue("color-scheme").includes("dark");
+  root.dataset.theme = dark ? "light" : "dark"; readColors(); showScene(flat[mod].steps[step].s);
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { readColors(); showScene(flat[mod].steps[step].s); });
+
+readColors();
+const pos = load("aa-pos");
+if (pos && flat[pos.mod]) { mod = pos.mod; step = Math.min(pos.step, flat[mod].steps.length - 1); }
+renderSyllabus();
+try { initThree(); requestAnimationFrame(loop); } catch (e) { $("stage-tag").textContent = "Animation 3D indisponible sur cet appareil"; }
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => renderStep());
+</script>
