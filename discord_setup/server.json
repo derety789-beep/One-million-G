@@ -1,0 +1,62 @@
+{
+  "roles": [
+    {"name": "👑 Fondateur", "color": "#F1C40F", "hoist": true, "permissions": ["ADMINISTRATOR"]},
+    {"name": "🛡️ Modérateur", "color": "#E74C3C", "hoist": true,
+     "permissions": ["VIEW_CHANNEL", "SEND_MESSAGES", "READ_MESSAGE_HISTORY", "ADD_REACTIONS", "CONNECT", "SPEAK",
+                     "MANAGE_MESSAGES", "KICK_MEMBERS", "BAN_MEMBERS", "MODERATE_MEMBERS", "MANAGE_NICKNAMES", "MUTE_MEMBERS"]},
+    {"name": "💎 VIP", "color": "#9B59B6", "hoist": true, "permissions": []},
+    {"name": "🎬 Abonné YouTube", "color": "#E67E22", "hoist": false, "permissions": []},
+    {"name": "👥 Membre", "color": "#3498DB", "hoist": false, "permissions": []}
+  ],
+
+  "categories": [
+    {
+      "name": "📌 INFOS",
+      "channels": [
+        {"name": "👋・bienvenue", "type": "text", "mode": "read_only", "system_channel": true,
+         "topic": "Bienvenue sur le serveur !", "message": "welcome"},
+        {"name": "📜・règles", "type": "text", "mode": "read_only", "topic": "À lire avant tout", "message": "rules"},
+        {"name": "📢・annonces", "type": "text", "mode": "read_only", "topic": "Les nouveautés du serveur et de la chaîne"},
+        {"name": "🎬・nouvelles-vidéos", "type": "text", "mode": "read_only", "topic": "Chaque nouvelle vidéo YouTube arrive ici"}
+      ]
+    },
+    {
+      "name": "💬 COMMUNAUTÉ",
+      "channels": [
+        {"name": "💬・discussion", "type": "text", "topic": "Parle de tout et de rien"},
+        {"name": "💡・idées-de-vidéos", "type": "text", "topic": "Propose des idées de vidéos pour la chaîne"},
+        {"name": "📸・médias", "type": "text", "topic": "Images, vidéos, captures"},
+        {"name": "🤣・memes", "type": "text", "topic": "Les meilleurs memes"}
+      ]
+    },
+    {
+      "name": "💰 OBJECTIF 1 MILLION",
+      "channels": [
+        {"name": "💸・business-et-argent", "type": "text", "topic": "Business, side hustles, investissements"},
+        {"name": "🏆・réussites", "type": "text", "topic": "Partage tes victoires, même petites"},
+        {"name": "🎯・objectifs", "type": "text", "topic": "Écris tes objectifs et suis ta progression"}
+      ]
+    },
+    {
+      "name": "🔊 VOCAL",
+      "channels": [
+        {"name": "🎙️ Discussion", "type": "voice"},
+        {"name": "🎮 Gaming", "type": "voice"},
+        {"name": "🎧 Musique", "type": "voice"}
+      ]
+    },
+    {
+      "name": "🛡️ STAFF",
+      "mode": "staff_only",
+      "channels": [
+        {"name": "🔒・staff", "type": "text", "mode": "staff_only", "topic": "Discussion entre modérateurs"},
+        {"name": "📋・logs", "type": "text", "mode": "staff_only", "topic": "Suivi de la modération"}
+      ]
+    }
+  ],
+
+  "messages": {
+    "welcome": "# 👋 Bienvenue sur One-million-G !\n\nIci, on construit ensemble une communauté qui vise **le million** 🎯\n\n📜 Lis d'abord les règles\n💬 Présente-toi dans la discussion\n🎬 Ne rate aucune vidéo grâce au salon des nouvelles vidéos\n\nBonne aventure ! 🚀",
+    "rules": "# 📜 Règles du serveur\n\n**1.** Respecte tout le monde : pas d'insultes, de racisme ni de harcèlement.\n**2.** Pas de spam ni de pub sans autorisation.\n**3.** Pas de contenu choquant, illégal ou NSFW.\n**4.** Pas d'arnaques ni de « plans pour devenir riche » douteux.\n**5.** Utilise les bons salons.\n**6.** Écoute les modérateurs 🛡️.\n\nEn restant sur le serveur, tu acceptes ces règles. ✅"
+  }
+}

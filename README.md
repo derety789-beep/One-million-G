@@ -9,6 +9,8 @@ Un bot qui tourne 24h/24 sur un serveur et gère ta chaîne YouTube :
 | 💬 **Réponses aux commentaires** | Toutes les 30 min, il répond aux nouveaux commentaires et ignore le spam et les insultes. |
 | 📊 **Rapport des stats** | Chaque matin : abonnés, vues, évolution depuis la veille et progression vers 1 million, envoyés sur Telegram. |
 
+> 🎮 **Tu veux aussi un serveur Discord ?** Suis le guide [discord_setup/README.md](discord_setup/README.md) : un bot crée tous les salons et les rôles pour toi, gratuitement.
+
 ---
 
 ## 1. Préparer les accès (une seule fois)
